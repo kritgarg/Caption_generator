@@ -1,0 +1,66 @@
+import React from "react";
+import {Composition, registerRoot} from "remotion";
+// JS component import from ./components
+// @ts-ignore
+import {Captions} from "./components/Captions";
+
+const fps = 30;
+
+const calculateMetadata = async ({props}: {props: any}) => {
+  const {videoSrc} = props ?? {};
+  if (!videoSrc) {
+    return {
+      durationInFrames: fps * 60,
+      props,
+    };
+  }
+
+  const durationSec: number = await new Promise((resolve) => {
+    try {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.src = videoSrc;
+      video.crossOrigin = "anonymous";
+      const onLoaded = () => {
+        resolve(Number.isFinite(video.duration) ? video.duration : 60);
+        cleanup();
+      };
+      const onError = () => {
+        resolve(60);
+        cleanup();
+      };
+      const cleanup = () => {
+        video.removeEventListener("loadedmetadata", onLoaded);
+        video.removeEventListener("error", onError);
+      };
+      video.addEventListener("loadedmetadata", onLoaded);
+      video.addEventListener("error", onError);
+    } catch {
+      resolve(60);
+    }
+  });
+
+  return {
+    durationInFrames: Math.max(1, Math.round(durationSec * fps)),
+    props,
+  };
+};
+
+export const RemotionRoot: React.FC = () => {
+  return (
+    <>
+      <Composition
+        id="CaptionDemo"
+        component={Captions}
+        width={1280}
+        height={720}
+        fps={fps}
+        durationInFrames={fps * 60}
+        defaultProps={{words: [], preset: "bottom", videoSrc: null}}
+        calculateMetadata={calculateMetadata}
+      />
+    </>
+  );
+};
+
+registerRoot(RemotionRoot);
