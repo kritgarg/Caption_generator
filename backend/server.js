@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import multer from "multer";
 import fs from "fs";
@@ -78,6 +79,11 @@ async function pollTranscription(id) {
 // Upload + Transcribe endpoint
 app.post("/transcribe", upload.single("video"), async (req, res) => {
   try {
+    if (!ASSEMBLY_API_KEY) {
+      return res.status(500).json({
+        error: "Server missing ASSEMBLY_API_KEY. Set it in environment and restart the backend.",
+      });
+    }
     const audioUrl = await uploadToAssembly(req.file.path);
     const transcriptId = await transcribeAudio(audioUrl);
     const transcript = await pollTranscription(transcriptId);
