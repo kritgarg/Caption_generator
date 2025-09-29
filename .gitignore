@@ -1,0 +1,29 @@
+# OS
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# Remotion / builds
+**/dist/
+**/.turbo/
+**/.next/
+**/out/
+**/*.log
+
+# Uploads and outputs
+backend/uploads/
+frontend/remotion-caption-demo/props-*.json
+frontend/remotion-caption-demo/out-*.mp4
+
+# Env
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
