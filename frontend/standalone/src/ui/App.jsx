@@ -6,15 +6,17 @@ import {wordsToSrt} from '../utils/srt.js';
 const BACKEND_URL = 'http://localhost:3001/transcribe';
 
 export default function App() {
+  const FPS = 30;
   const [fileBlob, setFileBlob] = useState(null);
   const [videoSrc, setVideoSrc] = useState(null);
   const [serverVideoUrl, setServerVideoUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState({text: '', words: []});
-  const [stage, setStage] = useState('idle'); // idle | loading | ready
+  const [stage, setStage] = useState('idle');
   const [selectedPreset, setSelectedPreset] = useState('bottom');
   const [rendering, setRendering] = useState(false);
+  const [videoSeconds, setVideoSeconds] = useState(null);
 
   const onFileChange = useCallback((e) => {
     const file = e.target.files?.[0];
@@ -46,7 +48,7 @@ export default function App() {
       }
       const json = await res.json();
       setResult({text: json.text || '', words: json.words || []});
-      // Prefer server-accessible URL for both preview and rendering
+      
       if (json.videoUrl) {
         setServerVideoUrl(json.videoUrl);
       }
@@ -61,6 +63,36 @@ export default function App() {
 
   const previewSrc = serverVideoUrl || videoSrc;
   const baseProps = useMemo(() => ({words: result.words, videoSrc: previewSrc}), [result.words, previewSrc]);
+  
+  React.useEffect(() => {
+    if (!previewSrc) { setVideoSeconds(null); return; }
+    let cancelled = false;
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.src = previewSrc;
+    const onLoaded = () => {
+      if (!cancelled) setVideoSeconds(Number.isFinite(video.duration) ? video.duration : null);
+      cleanup();
+    };
+    const onError = () => { if (!cancelled) setVideoSeconds(null); cleanup(); };
+    const cleanup = () => {
+      video.removeEventListener('loadedmetadata', onLoaded);
+      video.removeEventListener('error', onError);
+    };
+    video.addEventListener('loadedmetadata', onLoaded);
+    video.addEventListener('error', onError);
+    return () => { cancelled = true; cleanup(); };
+  }, [previewSrc]);
+  
+  const durationInFrames = useMemo(() => {
+    const lastEndMs = (result.words && result.words.length)
+      ? Math.max(...result.words.map(w => typeof w.end === 'number' ? w.end : 0))
+      : 0;
+    const fromWordsSec = lastEndMs > 0 ? lastEndMs / 1000 : 0;
+    const fromVideoSec = typeof videoSeconds === 'number' ? videoSeconds : 0;
+    const seconds = Math.max(8, fromWordsSec || fromVideoSec || 0);
+    return Math.max(FPS, Math.round(seconds * FPS));
+  }, [result.words, videoSeconds]);
 
   const downloadSrt = useCallback(() => {
     try {
@@ -168,8 +200,8 @@ export default function App() {
                 inputProps={{...baseProps, preset: selectedPreset}}
                 compositionWidth={1280}
                 compositionHeight={720}
-                fps={30}
-                durationInFrames={60}
+                fps={FPS}
+                durationInFrames={durationInFrames}
                 controls
               />
             </div>

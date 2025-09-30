@@ -3,14 +3,11 @@ import {Composition, registerRoot} from 'remotion';
 import {Captions} from './components/Captions';
 
 const fps = 30;
-
-// Dynamically compute duration from provided videoSrc using browser metadata.
-// Works in Remotion Studio; for renders, ensure the file is accessible.
 const calculateMetadata = async ({props}) => {
   const {videoSrc} = props ?? {};
   if (!videoSrc) {
     return {
-      durationInFrames: fps * 60, // fallback 60s
+      durationInFrames: fps * 60,
       props,
     };
   }
@@ -64,3 +61,4 @@ export const RemotionRoot = () => {
 };
 
 registerRoot(RemotionRoot);
+

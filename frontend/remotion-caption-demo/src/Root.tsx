@@ -1,6 +1,5 @@
 import "./index.css";
 import { Composition } from "remotion";
-// @ts-ignore - JS component
 import { Captions } from "./components/Captions";
 import { CaptionUI } from "./CaptionUI";
 

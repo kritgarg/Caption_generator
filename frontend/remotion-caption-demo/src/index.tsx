@@ -1,7 +1,5 @@
 import React from "react";
 import {Composition, registerRoot} from "remotion";
-// JS component import from ./components
-// @ts-ignore
 import {Captions} from "./components/Captions";
 
 const fps = 30;
@@ -64,3 +62,4 @@ export const RemotionRoot: React.FC = () => {
 };
 
 registerRoot(RemotionRoot);
+

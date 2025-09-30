@@ -1,24 +1,17 @@
 import React, {useMemo} from 'react';
 import {AbsoluteFill, Sequence, Video, useCurrentFrame, useVideoConfig} from 'remotion';
-
-// Props: { words: Array<{start:number; end:number; text:string}>, preset: 'bottom'|'top'|'karaoke', videoSrc: string|null }
 export const Captions = ({words = [], preset = 'bottom', videoSrc = null}) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
-
   const tMs = (frame / fps) * 1000;
-
   const activeIndex = useMemo(() => {
     if (!words?.length) return -1;
-    // Find current word by time
-    // Could be optimized with binary search; linear pass is fine for now
     for (let i = 0; i < words.length; i++) {
       const w = words[i];
       if (tMs >= (w.start ?? 0) && tMs < (w.end ?? 0)) return i;
     }
     return -1;
   }, [tMs, words]);
-
   const captionLine = useMemo(() => {
     if (!words?.length) return '';
     if (activeIndex < 0) return '';
@@ -36,8 +29,6 @@ export const Captions = ({words = [], preset = 'bottom', videoSrc = null}) => {
           Provide a video to preview.
         </AbsoluteFill>
       )}
-
-      {/* Caption overlays */}
       {preset !== 'karaoke' ? (
         <AbsoluteFill
           style={{
@@ -63,7 +54,6 @@ export const Captions = ({words = [], preset = 'bottom', videoSrc = null}) => {
           </div>
         </AbsoluteFill>
       ) : (
-        // Karaoke style: Show a row of words, highlight active
         <AbsoluteFill style={{justifyContent: 'flex-end', alignItems: 'center', padding: 40}}>
           <div
             style={{
@@ -101,3 +91,4 @@ export const Captions = ({words = [], preset = 'bottom', videoSrc = null}) => {
     </AbsoluteFill>
   );
 };
+

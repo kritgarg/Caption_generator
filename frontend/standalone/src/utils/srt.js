@@ -1,4 +1,3 @@
-// Convert milliseconds to SRT timestamp HH:MM:SS,mmm
 const msToSrt = (ms) => {
   const sign = ms < 0 ? '-' : '';
   const abs = Math.max(0, Math.floor(Math.abs(ms)));
@@ -10,8 +9,6 @@ const msToSrt = (ms) => {
   const pad3 = (n) => String(n).padStart(3, '0');
   return `${sign}${pad2(h)}:${pad2(m)}:${pad2(s)},${pad3(msPart)}`;
 };
-
-// Parse SRT timestamp HH:MM:SS,mmm to milliseconds
 const srtToMs = (ts) => {
   const m = ts.trim().match(/^(?<h>\d{2}):(?<m>\d{2}):(?<s>\d{2}),(?<ms>\d{3})$/);
   if (!m || !m.groups) return 0;
@@ -36,7 +33,6 @@ export const wordsToSrt = (words = []) => {
   }
   return lines.join('\n');
 };
-
 export const srtToWords = (srtText = '') => {
   const blocks = srtText.replace(/\r/g, '').split(/\n\s*\n/);
   const words = [];

@@ -9,8 +9,7 @@ import { exec } from "child_process";
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
-
-// Minimal CORS for local dev
+ 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -20,11 +19,10 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: "20mb" }));
-
-// Serve uploaded files so the renderer can access them via HTTP
+ 
 app.use("/static", express.static("uploads"));
 
-const ASSEMBLY_API_KEY = process.env.ASSEMBLY_API_KEY;
+const ASSEMBLY_API_KEY = "5ec0c4e6a754422a8cbc58950f48b0c4";
 
 async function uploadToAssembly(filePath) {
   const fileData = fs.readFileSync(filePath);
@@ -48,7 +46,7 @@ async function transcribeAudio(audioUrl) {
     "https://api.assemblyai.com/v2/transcript",
     {
       audio_url: audioUrl,
-      language_detection: true, // auto detect Hinglish
+      language_detection: true,
       punctuate: true,
       format_text: true,
     },
@@ -75,8 +73,7 @@ async function pollTranscription(id) {
     await new Promise((r) => setTimeout(r, 5000));
   }
 }
-
-// Upload + Transcribe endpoint
+ 
 app.post("/transcribe", upload.single("video"), async (req, res) => {
   try {
     if (!ASSEMBLY_API_KEY) {
@@ -90,7 +87,7 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
 
     res.json({
       text: transcript.text,
-      words: transcript.words, // [{start, end, text}]
+      words: transcript.words,
       videoUrl: `http://localhost:3001/static/${req.file.filename}`,
     });
   } catch (err) {
@@ -98,15 +95,13 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// Render MP4 using Remotion CLI and return the file
+ 
 app.post("/render", async (req, res) => {
   try {
     const { preset, words, videoUrl } = req.body || {};
     if (!Array.isArray(words) || !videoUrl || !preset)
       return res.status(400).json({ error: "preset, words[], videoUrl required" });
-
-    // Prepare props.json in the Remotion project directory
+ 
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const projectDir = path.resolve(__dirname, "../frontend/remotion-caption-demo");
@@ -151,5 +146,6 @@ app.post("/render", async (req, res) => {
 });
 
 app.listen(3001, () =>
-  console.log("✅ Server running at http://localhost:3001")
+  console.log("congratulations server is running")
 );
+

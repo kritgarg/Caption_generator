@@ -1,14 +1,6 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {Player} from '@remotion/player';
 import {wordsToSrt} from './utils/srt';
-
-// Note: Ensure you have a composition registered with id "CaptionDemo"
-// in `src/Root.tsx` using Remotion's <Composition id="CaptionDemo" ... />
-// and that the component accepts props: {words, preset, videoSrc}.
-// Example props shape expected from backend:
-//   words: Array<{start: number; end: number; text: string}>
-//   text: string
-
 const BACKEND_URL = 'http://localhost:3001/transcribe';
 
 export default function PlayerApp() {
@@ -16,14 +8,13 @@ export default function PlayerApp() {
   const [error, setError] = useState(null);
   const [result, setResult] = useState({text: '', words: []});
   const [videoSrc, setVideoSrc] = useState(null);
-  const [preset, setPreset] = useState('bottom'); // default selected in controls
+  const [preset, setPreset] = useState('bottom');
   const [fileBlob, setFileBlob] = useState(null);
+  const FPS = 30;
 
   const onFileChange = useCallback(async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Preview the uploaded video immediately
     const objectUrl = URL.createObjectURL(file);
     setVideoSrc(objectUrl);
     setFileBlob(file);
@@ -60,6 +51,13 @@ export default function PlayerApp() {
     () => ({ words: result.words, videoSrc }),
     [result.words, videoSrc]
   );
+  const durationInFrames = useMemo(() => {
+    const lastEndMs = (result.words && result.words.length)
+      ? Math.max(...result.words.map((w) => typeof w.end === 'number' ? w.end : 0))
+      : 0;
+    const seconds = Math.max(8, lastEndMs > 0 ? lastEndMs / 1000 : 0);
+    return Math.max(FPS, Math.round(seconds * FPS));
+  }, [result.words]);
 
   const downloadSrt = useCallback(() => {
     try {
@@ -115,8 +113,6 @@ export default function PlayerApp() {
         {uploading && <span>Transcribing… This can take a minute.</span>}
         {error && <span style={{color: 'red'}}>Error: {error}</span>}
       </div>
-
-      {/* 3 live previews */}
       <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16}}>
         {["bottom", "top", "karaoke"].map((p) => (
           <div key={p} style={{aspectRatio: '16/9', background: '#111', borderRadius: 8, overflow: 'hidden'}}>
@@ -125,11 +121,10 @@ export default function PlayerApp() {
               style={{width: '100%', height: '100%'}}
               compositionWidth={1280}
               compositionHeight={720}
-              fps={30}
-              durationInFrames={60}
+              fps={FPS}
+              durationInFrames={durationInFrames}
               controls
               inputProps={{...baseInputProps, preset: p}}
-              // @ts-expect-error compositionId works in Studio context
               compositionId="CaptionDemo"
             />
           </div>

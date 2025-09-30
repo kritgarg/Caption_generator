@@ -1,6 +1,5 @@
 import React, {useCallback, useMemo, useState} from "react";
 import {AbsoluteFill} from "remotion";
-// @ts-ignore - JS component
 import {Captions} from "./components/Captions";
 import {wordsToSrt} from "./utils/srt";
 
@@ -81,7 +80,6 @@ export const CaptionUI: React.FC = () => {
 
   return (
     <AbsoluteFill style={{background: "#0b0b0b", color: "#fff", fontFamily: 'Noto Sans Devanagari, Noto Sans, sans-serif'}}>
-      {/* Controls */}
       <div style={{display: "flex", gap: 12, alignItems: "center", padding: 12, background: "#151515"}}>
         <label>
           <span style={{marginRight: 8, fontWeight: 700}}>Upload MP4:</span>
@@ -92,8 +90,6 @@ export const CaptionUI: React.FC = () => {
         </button>
         {error && <span style={{color: "#ff6b6b"}}>Error: {error}</span>}
       </div>
-
-      {/* Previews grid */}
       <div style={{display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, padding: 12}}>
         {(["bottom", "top", "karaoke"] as const).map((p) => (
           <div key={p} style={{position: "relative", background: "#111", borderRadius: 8, overflow: "hidden"}}>
@@ -101,14 +97,11 @@ export const CaptionUI: React.FC = () => {
               {p} preview
             </div>
             <div style={{position: "absolute", inset: 0}}>
-              {/* Reuse Captions component which includes <Video/> and overlay */}
               <Captions {...baseProps} preset={p} />
             </div>
           </div>
         ))}
       </div>
-
-      {/* Exports and CLI hint */}
       <div style={{display: 'flex', gap: 8, padding: 12, alignItems: 'center'}}>
         <button onClick={downloadSrt} disabled={!result.words?.length}>Download SRT</button>
         <button onClick={downloadPropsJson} disabled={!result.words?.length}>Download props.json</button>

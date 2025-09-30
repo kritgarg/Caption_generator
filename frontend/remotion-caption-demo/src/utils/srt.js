@@ -1,4 +1,3 @@
-// Convert milliseconds to SRT timestamp HH:MM:SS,mmm
 const msToSrt = (ms) => {
   const sign = ms < 0 ? '-' : '';
   const abs = Math.max(0, Math.floor(Math.abs(ms)));
@@ -10,8 +9,6 @@ const msToSrt = (ms) => {
   const pad3 = (n) => String(n).padStart(3, '0');
   return `${sign}${pad2(h)}:${pad2(m)}:${pad2(s)},${pad3(msPart)}`;
 };
-
-// Parse SRT timestamp HH:MM:SS,mmm to milliseconds
 const srtToMs = (ts) => {
   const m = ts.trim().match(/^(?<h>\d{2}):(?<m>\d{2}):(?<s>\d{2}),(?<ms>\d{3})$/);
   if (!m || !m.groups) return 0;
@@ -21,8 +18,6 @@ const srtToMs = (ts) => {
   const ms = Number(m.groups.ms) || 0;
   return h * 3600000 + mi * 60000 + s * 1000 + ms;
 };
-
-// Convert array of {start, end, text} to SRT string
 export const wordsToSrt = (words = []) => {
   const lines = [];
   for (let i = 0; i < words.length; i++) {
@@ -37,33 +32,24 @@ export const wordsToSrt = (words = []) => {
   }
   return lines.join('\n');
 };
-
-// Parse SRT into array of {start, end, text}
 export const srtToWords = (srtText = '') => {
   const blocks = srtText.replace(/\r/g, '').split(/\n\s*\n/);
   const words = [];
   for (const block of blocks) {
     const lines = block.split('\n').filter((l) => l.trim().length > 0);
     if (lines.length < 2) continue;
-
-    // Detect time line (usually the 2nd line, but sometimes first if index omitted)
     let timeLineIdx = 1;
     let idxLineIsNumber = /^\d+$/.test(lines[0].trim());
-    if (!idxLineIsNumber) timeLineIdx = 0; // No numeric index provided
-
+    if (!idxLineIsNumber) timeLineIdx = 0;
     const timeLine = lines[timeLineIdx];
     const timeMatch = timeLine.match(/(?<start>\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(?<end>\d{2}:\d{2}:\d{2},\d{3})/);
     if (!timeMatch || !timeMatch.groups) continue;
     const startMs = srtToMs(timeMatch.groups.start);
     const endMs = srtToMs(timeMatch.groups.end);
     if (!(endMs > startMs)) continue;
-
-    // Remaining lines are the subtitle text
     const textLines = lines.slice(timeLineIdx + 1);
     const subtitle = textLines.join(' ').trim();
     if (!subtitle) continue;
-
-    // Split into tokens and distribute time evenly
     const tokens = subtitle.split(/\s+/).filter(Boolean);
     const dur = endMs - startMs;
     if (tokens.length === 1) {
