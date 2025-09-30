@@ -1,6 +1,8 @@
 import React, {useCallback, useMemo, useState} from "react";
 import {AbsoluteFill} from "remotion";
+// @ts-ignore
 import {Captions} from "./components/Captions";
+// @ts-ignore
 import {wordsToSrt} from "./utils/srt";
 
 const BACKEND_URL = "http://localhost:3001/transcribe";
