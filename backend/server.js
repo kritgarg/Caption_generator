@@ -22,7 +22,7 @@ app.use(express.json({ limit: "20mb" }));
  
 app.use("/static", express.static("uploads"));
 
-const ASSEMBLY_API_KEY = "5ec0c4e6a754422a8cbc58950f48b0c4";
+const ASSEMBLY_API_KEY = process.env.ASSEMBLY_API_KEY;
 
 async function uploadToAssembly(filePath) {
   const fileData = fs.readFileSync(filePath);
